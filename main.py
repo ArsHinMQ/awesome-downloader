@@ -161,7 +161,11 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     output_path = f'./outputs/{link}'
 
     service = Service('./geckodriver')
-    driver = webdriver.Firefox(service=service)
+    opts = webdriver.FirefoxOptions()
+    opts.add_argument('--disable-gpu')
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--headless")
+    driver = webdriver.Firefox(service=service, options=opts)
     try:
         status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Processing...')
         driver.get(address)
