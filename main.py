@@ -20,6 +20,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 # ----------------- CONFIGS -----------------
 
@@ -33,6 +34,7 @@ class Config(object):
     token = os.getenv('TOKEN')
     instagram_username = os.getenv('INSTAGRAM_USERNAME')
     instagram_password = os.getenv('INSTAGRAM_PASSWORD')
+    firefox_path = os.getenv('FIREFOX_PATH', '')
     is_product = int(os.getenv('IS_PRODUCT', 0))
 
     def __new__(self):
@@ -159,10 +161,11 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     service = Service('./geckodriver')
     opts = webdriver.FirefoxOptions()
+    firefox_binary = FirefoxBinary(Config().firefox_path) if Config().firefox_path else None
     opts.add_argument('--disable-gpu')
     opts.add_argument("--no-sandbox")
     opts.add_argument("--headless")
-    driver = webdriver.Firefox(service=service, options=opts)
+    driver = webdriver.Firefox(service=service, firefox_binary=firefox_binary, options=opts)
     try:
         status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Processing...')
         driver.get(address)
