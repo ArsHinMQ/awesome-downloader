@@ -159,9 +159,11 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     address = 'https://www.instagram.com/accounts/login/?next=' + route
 
     status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Processing...')
+    firefox_binary = (FirefoxBinary(Config().firefox_bin)
+                      if Config().firefox_bin
+                      else None)
     opts = webdriver.FirefoxOptions()
-    firefox_binary = FirefoxBinary(
-        Config().firefox_bin) if Config().firefox_bin else None
+    opts.add_argument('--disable-blink-features=AutomationControlled')
     opts.add_argument('--disable-gpu')
     opts.add_argument("--no-sandbox")
     opts.add_argument("--headless")
