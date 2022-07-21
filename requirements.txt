@@ -3,4 +3,4 @@ python-dotenv
 pytube
 httpx
 selenium
-wget
+requests
