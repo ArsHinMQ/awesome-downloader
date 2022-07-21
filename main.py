@@ -333,7 +333,7 @@ if __name__ == '__main__':
     if Config().is_product:
         app.run_webhook(
             listen='0.0.0.0',
-            port=8443,
+            port=Config().port,
             url_path=Config().token,
             webhook_url=Config().webhook_url + '/' + Config().token
         )
