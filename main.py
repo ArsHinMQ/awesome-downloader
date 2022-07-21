@@ -225,7 +225,7 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await ctx.bot.edit_message_text('✂️ Fetching...', chat_id=chat_id, message_id=status_msg.message_id)
         try:
             # Current content/post/story/reel/etc has a class of ._aagu
-            WebDriverWait(driver, 25).until(
+            WebDriverWait(driver, 60).until(
                 expected_conditions.presence_of_element_located(
                     (By.CSS_SELECTOR, '._aagu')
                 )
