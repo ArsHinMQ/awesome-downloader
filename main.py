@@ -32,7 +32,7 @@ class Config(object):
     token = os.getenv('TOKEN')
     instagram_username = os.getenv('INSTAGRAM_USERNAME')
     instagram_password = os.getenv('INSTAGRAM_PASSWORD')
-    is_product = os.getenv('IS_PRODUCT', False)
+    is_product = int(os.getenv('IS_PRODUCT', 0))
 
     def __new__(self):
         if self._instance is None:
