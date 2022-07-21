@@ -207,13 +207,9 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                     'Not now'
                 )
             )
-        except NoSuchElementException:
-            await ctx.bot.delete_message(chat_id=chat_id, message_id=status_msg.message_id)
-            await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='❌ Couldn\'t fecth Instagram, please try again another time.')
-            logging.error('Failed to login.')
-            driver.quit()
-            return
-        finally:
+        except:
+            pass
+        else:
             driver.find_element(
                 by='css selector',
                 value='button.sqdOP.yWX7d.y3zKF'
