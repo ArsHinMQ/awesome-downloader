@@ -27,9 +27,12 @@ load_dotenv()
 
 class Config(object):
     _instance = None
+    port = os.getenv('PORT')
+    webhook_url = os.getenv('WEBHOOK_URL')
     token = os.getenv('TOKEN')
     instagram_username = os.getenv('INSTAGRAM_USERNAME')
     instagram_password = os.getenv('INSTAGRAM_PASSWORD')
+    is_product = int(os.getenv('IS_PRODUCT', 0))
 
     def __new__(self):
         if self._instance is None:
@@ -98,7 +101,7 @@ async def help_(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     - Couldn\'t fetch Instagram - there is nothing that you can do, just try another time =)
     '''.replace('    ', '')
     await ctx.bot.send_message(chat_id=update.effective_chat.id, text=text)
-    
+
 
 async def yt_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # BASIC MESSAGE INFO
@@ -283,15 +286,14 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             extension = media_types[index]
             wget.download(src, f'{output_path}/{index}.{extension}')
 
-            match extension:
-                case 'mp4':
-                    medias.append(InputMediaVideo(
-                        open(f'{output_path}/{index}.{extension}', 'rb')
-                    ))
-                case 'jpg':
-                    medias.append(InputMediaPhoto(
-                        open(f'{output_path}/{index}.{extension}', 'rb')
-                    ))
+            if extension == 'mp4':
+                medias.append(InputMediaVideo(
+                    open(f'{output_path}/{index}.{extension}', 'rb')
+                ))
+            elif extension == 'jpg':
+                medias.append(InputMediaPhoto(
+                    open(f'{output_path}/{index}.{extension}', 'rb')
+                ))
 
         await ctx.bot.edit_message_text(f'✨ Sending...', chat_id=chat_id, message_id=status_msg.message_id)
         await ctx.bot.send_media_group(chat_id=chat_id, reply_to_message_id=msg_id, media=medias)
@@ -310,7 +312,7 @@ if __name__ == '__main__':
     if not os.path.isdir('./outputs'):
         # create outputs directory if it isnot created(you are running tyhe code for the first time)
         os.mkdir('./outputs')
-        
+
     app = ApplicationBuilder().token(Config().token).build()
 
     yt_filter = YouTubeFilter()
@@ -328,4 +330,13 @@ if __name__ == '__main__':
         insta_handler
     ])
 
-    app.run_polling()
+    if Config().is_product:
+        app.run_webhook(
+            listen='0.0.0.0',
+            port=8443,
+            url_path=Config().token,
+            webhook_url=Config().webhook_url + '/' + Config().token
+        )
+    else:
+        app.run_polling()  
+        
