@@ -27,7 +27,7 @@ load_dotenv()
 
 class Config(object):
     _instance = None
-    port = os.getenv('PORT')
+    port = os.getenv('PORT', 8443)
     webhook_url = os.getenv('WEBHOOK_URL')
     token = os.getenv('TOKEN')
     instagram_username = os.getenv('INSTAGRAM_USERNAME')
@@ -309,10 +309,6 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
-    if not os.path.isdir('./outputs'):
-        # create outputs directory if it isnot created(you are running tyhe code for the first time)
-        os.mkdir('./outputs')
-
     app = ApplicationBuilder().token(Config().token).build()
 
     yt_filter = YouTubeFilter()
@@ -333,7 +329,7 @@ if __name__ == '__main__':
     if Config().is_product:
         app.run_webhook(
             listen='0.0.0.0',
-            port=8443,
+            port=Config().port,
             url_path=Config().token,
             webhook_url=Config().webhook_url + '/' + Config().token
         )
