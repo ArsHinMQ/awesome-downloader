@@ -1,12 +1,13 @@
 import os
 import logging
 import re
-import shutil
 
-import wget
+import requests
+
+from io import BytesIO
 
 from dotenv import load_dotenv
-from telegram import Update, InputMediaPhoto, InputMediaVideo
+from telegram import Update, InputMediaPhoto, InputMediaVideo, Video
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler
 from telegram.ext.filters import MessageFilter
 
@@ -110,27 +111,24 @@ async def yt_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     # VIDEO INFO
     url: str = update.message.text
-    video_link: str = url.split('/')[-1].split('?')[0]
-    output_path = f'./outputs/{video_link}.mp4'
 
     try:
         status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Finding Video...')
-        streams = YouTube(url).streams.filter(file_extension='mp4')
+        streams = YouTube(url).streams.filter(extension='mp4')
 
         await ctx.bot.edit_message_text(chat_id=chat_id, message_id=status_msg.message_id, text='🔽 Downloading...')
-        streams.first().download(
-            output_path='outputs/yt',
-            filename=f'{video_link}.mp4'
-        )
+        vid_buffer = BytesIO()
+        streams.get_highest_resolution().stream_to_buffer(vid_buffer)
+        vid_buffer.seek(0)
+        
 
         await ctx.bot.edit_message_text(chat_id=chat_id, message_id=status_msg.message_id, text='✨ Sending...')
         await ctx.bot.send_video(
             chat_id=chat_id,
-            video=open(output_path, 'rb'),
+            video=vid_buffer,
             reply_to_message_id=msg_id,
             supports_streaming=True
         )
-        os.remove(output_path)
 
     except exceptions.RegexMatchError:
         await ctx.bot.send_message(
@@ -158,10 +156,6 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     url = update.message.text.split('?')[0]
     route = url[25:]
     address = 'https://www.instagram.com/accounts/login/?next=' + route
-
-    # OUTPUT
-    link = url.split('/')[-2]
-    output_path = f'./outputs/{link}'
 
     service = Service('./geckodriver')
     opts = webdriver.FirefoxOptions()
@@ -280,20 +274,15 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                     pass
 
         medias = []
-        os.mkdir(output_path)
         for index, src in enumerate(media_urls):
             await ctx.bot.edit_message_text(f'🔽 [{index + 1}/{len(media_urls)}] Downloading...', chat_id=chat_id, message_id=status_msg.message_id)
             extension = media_types[index]
-            wget.download(src, f'{output_path}/{index}.{extension}')
+            res = requests.get(src, timeout=10000000)
 
             if extension == 'mp4':
-                medias.append(InputMediaVideo(
-                    open(f'{output_path}/{index}.{extension}', 'rb')
-                ))
+                medias.append(InputMediaVideo(res.content))
             elif extension == 'jpg':
-                medias.append(InputMediaPhoto(
-                    open(f'{output_path}/{index}.{extension}', 'rb')
-                ))
+                medias.append(InputMediaPhoto(res.content))
 
         await ctx.bot.edit_message_text(f'✨ Sending...', chat_id=chat_id, message_id=status_msg.message_id)
         await ctx.bot.send_media_group(chat_id=chat_id, reply_to_message_id=msg_id, media=medias)
@@ -303,8 +292,6 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         logging.error(f'Unknown error accoured: {str(e)}')
 
     await ctx.bot.delete_message(chat_id=chat_id, message_id=status_msg.message_id)
-    if os.path.isdir(output_path):
-        shutil.rmtree(output_path)
     driver.quit()
 
 
