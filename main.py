@@ -15,7 +15,6 @@ from pytube import YouTube
 from pytube import exceptions
 
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
@@ -123,7 +122,6 @@ async def yt_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         vid_buffer = BytesIO()
         streams.get_highest_resolution().stream_to_buffer(vid_buffer)
         vid_buffer.seek(0)
-        
 
         await ctx.bot.edit_message_text(chat_id=chat_id, message_id=status_msg.message_id, text='✨ Sending...')
         await ctx.bot.send_video(
@@ -160,20 +158,26 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     route = url[25:]
     address = 'https://www.instagram.com/accounts/login/?next=' + route
 
-    service = Service(Config().firefox_driver)
+    status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Processing...')
     opts = webdriver.FirefoxOptions()
-    firefox_binary = FirefoxBinary(Config().firefox_bin) if Config().firefox_bin else None
+    firefox_binary = FirefoxBinary(
+        Config().firefox_bin) if Config().firefox_bin else None
     opts.add_argument('--disable-gpu')
     opts.add_argument("--no-sandbox")
     opts.add_argument("--headless")
-    driver = webdriver.Firefox(service=service, firefox_binary=firefox_binary, options=opts)
+    driver = webdriver.Firefox(
+        executable_path=Config().firefox_driver,
+        firefox_binary=firefox_binary,
+        options=opts
+    )
     try:
-        status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Processing...')
         driver.get(address)
         try:
             # Allowing essential cookies - instagram popup
-            driver.find_element(by='css selector',
-                                value='button.aOOlW.HoLwm').click()
+            driver.find_element(
+                by='css selector',
+                value='button.aOOlW.HoLwm'
+            ).click()
         except NoSuchElementException:
             pass
 
@@ -321,5 +325,4 @@ if __name__ == '__main__':
             webhook_url=Config().webhook_url + '/' + Config().token
         )
     else:
-        app.run_polling()  
-        
+        app.run_polling()
