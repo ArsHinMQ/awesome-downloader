@@ -167,7 +167,7 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     opts.add_argument("--headless")
     driver = webdriver.Firefox(service=service, firefox_binary=firefox_binary, options=opts)
     try:
-        status_msg = await ctx.bot.send_message(chat_i=chat_id, reply_to_message_id=msg_id, text='🔎 Processing...')
+        status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Processing...')
         driver.get(address)
         try:
             # Allowing essential cookies - instagram popup
