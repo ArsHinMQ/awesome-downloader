@@ -27,7 +27,7 @@ load_dotenv()
 
 class Config(object):
     _instance = None
-    port = os.getenv('PORT')
+    port = os.getenv('PORT', 8443)
     webhook_url = os.getenv('WEBHOOK_URL')
     token = os.getenv('TOKEN')
     instagram_username = os.getenv('INSTAGRAM_USERNAME')
