@@ -309,10 +309,6 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 if __name__ == '__main__':
-    if not os.path.isdir('./outputs'):
-        # create outputs directory if it isnot created(you are running tyhe code for the first time)
-        os.mkdir('./outputs')
-
     app = ApplicationBuilder().token(Config().token).build()
 
     yt_filter = YouTubeFilter()
