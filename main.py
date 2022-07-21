@@ -7,7 +7,7 @@ import requests
 from io import BytesIO
 
 from dotenv import load_dotenv
-from telegram import Update, InputMediaPhoto, InputMediaVideo, Video
+from telegram import Update, InputMediaPhoto, InputMediaVideo
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler
 from telegram.ext.filters import MessageFilter
 
@@ -34,7 +34,8 @@ class Config(object):
     token = os.getenv('TOKEN')
     instagram_username = os.getenv('INSTAGRAM_USERNAME')
     instagram_password = os.getenv('INSTAGRAM_PASSWORD')
-    firefox_path = os.getenv('FIREFOX_PATH', '')
+    firefox_bin = os.getenv('FIREFOX_BIN', '')
+    firefox_driver = os.getenv('FIREFOX_DRIVER')
     is_product = int(os.getenv('IS_PRODUCT', 0))
 
     def __new__(self):
@@ -159,9 +160,9 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     route = url[25:]
     address = 'https://www.instagram.com/accounts/login/?next=' + route
 
-    service = Service('./geckodriver')
+    service = Service(Config().firefox_driver)
     opts = webdriver.FirefoxOptions()
-    firefox_binary = FirefoxBinary(Config().firefox_path) if Config().firefox_path else None
+    firefox_binary = FirefoxBinary(Config().firefox_bin) if Config().firefox_bin else None
     opts.add_argument('--disable-gpu')
     opts.add_argument("--no-sandbox")
     opts.add_argument("--headless")
@@ -207,13 +208,9 @@ async def insta_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                     'Not now'
                 )
             )
-        except NoSuchElementException:
-            await ctx.bot.delete_message(chat_id=chat_id, message_id=status_msg.message_id)
-            await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='❌ Couldn\'t fecth Instagram, please try again another time.')
-            logging.error('Failed to login.')
-            driver.quit()
-            return
-        finally:
+        except:
+            pass
+        else:
             driver.find_element(
                 by='css selector',
                 value='button.sqdOP.yWX7d.y3zKF'
