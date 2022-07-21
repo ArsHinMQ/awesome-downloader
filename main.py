@@ -116,7 +116,7 @@ async def yt_downloader(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     try:
         status_msg = await ctx.bot.send_message(chat_id=chat_id, reply_to_message_id=msg_id, text='🔎 Finding Video...')
-        streams = YouTube(url).streams.filter(extension='mp4')
+        streams = YouTube(url).streams.filter(file_extension='mp4')
 
         await ctx.bot.edit_message_text(chat_id=chat_id, message_id=status_msg.message_id, text='🔽 Downloading...')
         vid_buffer = BytesIO()
